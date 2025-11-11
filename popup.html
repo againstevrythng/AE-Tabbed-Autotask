@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Autotask - Only with Tabs</title>
+  <style>
+    body {
+      background: rgb(162, 170, 191);
+      color: white;
+      max-width: 250px;
+      min-width: 250px;
+      font-size: 12px;
+      margin: 12px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    h3 { margin-top: 0; }
+    label { display: block; margin: 8px 0; line-height: 1.3; }
+  </style>
+  <script src="popup.js"></script>
+</head>
+<body>
+  <h3>Options</h3>
+
+  <label>
+    <input type="checkbox" id="opt_cur" checked>
+    Open Autotask tabs next to the current tab (instead of at the end)
+  </label>
+
+  <label>
+    <input type="checkbox" id="opt_rename" checked>
+    Rename ticket/task tabs to the ticket title
+  </label>
+
+  <label>
+    <input type="checkbox" id="opt_pop" checked>
+    Allow pop-ups on autotask.net (helps LiveLinks/external links)
+  </label>
+  
+  <label>
+  <input type="checkbox" id="opt_format" checked>
+  Format Autotask Alert text (line breaks, bullets, bold, etc.)
+</label>
+  
+</body>
+</html>
