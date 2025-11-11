@@ -3,7 +3,7 @@
   "name": "Autotask - Only with Tabs",
   "short_name": "AE-Tabbed-Autotask",
   "version": "1.0.0",
-  "description": "Originally developed by https://github.com/Invertee/Tabbed-Autotask. Forces Chrome to open Autotask pop-ups as tabs in your main window with smarter tab placement and optional title cleanup. Now includes enhanced formatting for Autotask Alert elements, supporting line breaks, bullet points, bold text, and headings for better readability.",
+  "description": "Forces Chrome to open Autotask pop-ups as tabs in your main window with smarter tab placement and other options.",
   "minimum_chrome_version": "114",
   "action": {
     "default_icon": {
