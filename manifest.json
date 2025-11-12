@@ -2,20 +2,20 @@
   "manifest_version": 3,
   "name": "Autotask - Only with Tabs",
   "short_name": "AE-Tabbed-Autotask",
-  "version": "1.0.0",
-  "description": "Forces Chrome to open Autotask pop-ups as tabs in your main window with smarter tab placement and other options.",
+  "version": "1.0.1",
+  "description": "Forces Autotask pop-ups to open as tabs in your main window with smarter tab placement, optional title renaming, and message formatting support.",
   "minimum_chrome_version": "114",
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "action": {
     "default_icon": {
       "48": "icon48.png",
       "128": "icon128.png"
     },
     "default_popup": "popup.html",
-    "default_title": "Autotask - Only with tabs."
-  },
-  "icons": {
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "default_title": "Autotask - Only with Tabs"
   },
   "background": {
     "service_worker": "background.js"
@@ -23,8 +23,7 @@
   "permissions": [
     "tabs",
     "scripting",
-    "storage",
-    "contentSettings"
+    "storage"
   ],
   "host_permissions": [
     "https://*.autotask.net/*"
@@ -32,16 +31,9 @@
   "content_scripts": [
     {
       "matches": ["https://*.autotask.net/*"],
-      "js": ["title.js"],
-      "run_at": "document_end"
-    },
-    {
-      "matches": ["https://*.autotask.net/*"],
-      "js": ["formatter.js"],
+      "js": ["title.js", "formatter.js", "modals.js"],
       "run_at": "document_idle"
     }
   ],
   "homepage_url": "https://github.com/Invertee/Tabbed-Autotask"
 }
-
-

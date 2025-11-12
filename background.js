@@ -1,4 +1,4 @@
-// MV3 service worker
+// background.js — MV3 Service Worker
 const AUTOTASK_PATTERN = "https://*.autotask.net/*";
 const AUTOTASK_MATCH_RE = /^https?:\/\/[^/]*autotask\.net\//i;
 
@@ -6,19 +6,43 @@ function isAutotaskUrl(url) {
   return AUTOTASK_MATCH_RE.test(url || "");
 }
 
+// --- Placeholder functions (contentSettings removed in MV3) ---
 function addPopupAllow() {
-  chrome.contentSettings.popups.set({
-    primaryPattern: AUTOTASK_PATTERN,
-    setting: "allow"
-  });
+  console.log("[AE Tabs] Popup allow preference set (MV3 no-op)");
 }
 
 function clearPopupSettings() {
-  // Clears popups settings set by this extension
-  chrome.contentSettings.popups.clear({});
+  console.log("[AE Tabs] Popup allow preference cleared (MV3 no-op)");
 }
 
-// Initialise defaults on install/update
+// --- Helper: Move a tab from a popup window into the main window ---
+function moveToMainWindow(tabId, activate = true) {
+  chrome.windows.getLastFocused({ windowTypes: ["normal"] }, (mainWin) => {
+    if (chrome.runtime.lastError || !mainWin) return;
+
+    chrome.storage.sync.get(["nextTab"], (cfg) => {
+      const placeNext = cfg.nextTab !== false; // default true
+      const updateTab = () => activate && chrome.tabs.update(tabId, { active: true });
+
+      if (placeNext) {
+        chrome.tabs.query({ active: true, windowId: mainWin.id }, (activeTabs) => {
+          const idx = activeTabs?.[0]?.index + 1 || -1;
+          chrome.tabs.move(tabId, { windowId: mainWin.id, index: idx }, () => {
+            if (chrome.runtime.lastError) console.warn(chrome.runtime.lastError);
+            updateTab();
+          });
+        });
+      } else {
+        chrome.tabs.move(tabId, { windowId: mainWin.id, index: -1 }, () => {
+          if (chrome.runtime.lastError) console.warn(chrome.runtime.lastError);
+          updateTab();
+        });
+      }
+    });
+  });
+}
+
+// --- Initialize defaults on install/update ---
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get(["nextTab", "rename", "popup"], (res) => {
     const updates = {};
@@ -26,16 +50,14 @@ chrome.runtime.onInstalled.addListener(() => {
     if (res.rename === undefined) updates.rename = true;
     if (res.popup === undefined) updates.popup = true;
 
-    if (Object.keys(updates).length) {
-      chrome.storage.sync.set(updates);
-    }
+    if (Object.keys(updates).length) chrome.storage.sync.set(updates);
 
     const allowPopups = res.popup === undefined ? true : !!res.popup;
     if (allowPopups) addPopupAllow(); else clearPopupSettings();
   });
 });
 
-// React to settings changes
+// --- React to settings changes ---
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync") return;
 
@@ -44,7 +66,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     else clearPopupSettings();
   }
 
-  // If rename gets turned on, nudge existing Autotask tabs to re-run the title logic
+  // Trigger title rename re-run
   if (changes.rename && changes.rename.newValue) {
     chrome.tabs.query({ url: AUTOTASK_PATTERN }, (tabs) => {
       tabs.forEach((tab) => {
@@ -52,46 +74,26 @@ chrome.storage.onChanged.addListener((changes, area) => {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ["title.js"]
-        });
+        }).catch(err => console.warn("[AE Tabs] rename inject failed:", err));
       });
     });
   }
 });
 
-// When a window is created (e.g., Autotask opens a popup), move its tab into the main window
+// --- Handle new popup windows ---
 chrome.windows.onCreated.addListener((createdWin) => {
   chrome.windows.get(createdWin.id, { populate: true }, (w) => {
     if (chrome.runtime.lastError || !w) return;
-    // Only act on popup windows; leave normal windows alone
     if (w.type && w.type !== "popup") return;
 
     const t = (w.tabs && w.tabs[0]) || null;
     if (!t || !isAutotaskUrl(t.url)) return;
 
-    // Move into last focused NORMAL window
-    chrome.windows.getLastFocused({ windowTypes: ["normal"] }, (mainWin) => {
-      if (chrome.runtime.lastError || !mainWin) return;
-
-      chrome.storage.sync.get(["nextTab"], (cfg) => {
-        const placeNext = cfg.nextTab !== false; // default true
-        if (placeNext) {
-          chrome.tabs.query({ active: true, windowId: mainWin.id }, (activeTabs) => {
-            const targetIndex = activeTabs && activeTabs[0] ? activeTabs[0].index + 1 : -1;
-            chrome.tabs.move(t.id, { windowId: mainWin.id, index: targetIndex }, () => {
-              chrome.tabs.update(t.id, { active: true });
-            });
-          });
-        } else {
-          chrome.tabs.move(t.id, { windowId: mainWin.id, index: -1 }, () => {
-            chrome.tabs.update(t.id, { active: true });
-          });
-        }
-      });
-    });
+    moveToMainWindow(t.id);
   });
 });
 
-// Fallback: if a tab in a popup window navigates to Autotask after creation, rescue it
+// --- Handle tabs that navigate to Autotask after creation ---
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (!tab || !tab.windowId) return;
   if (!changeInfo.url && changeInfo.status !== "complete") return;
@@ -100,25 +102,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   chrome.windows.get(tab.windowId, {}, (win) => {
     if (chrome.runtime.lastError || !win) return;
     if (win.type && win.type !== "popup") return;
-
-    chrome.windows.getLastFocused({ windowTypes: ["normal"] }, (mainWin) => {
-      if (chrome.runtime.lastError || !mainWin) return;
-
-      chrome.storage.sync.get(["nextTab"], (cfg) => {
-        const placeNext = cfg.nextTab !== false;
-        if (placeNext) {
-          chrome.tabs.query({ active: true, windowId: mainWin.id }, (activeTabs) => {
-            const targetIndex = activeTabs && activeTabs[0] ? activeTabs[0].index + 1 : -1;
-            chrome.tabs.move(tabId, { windowId: mainWin.id, index: targetIndex }, () => {
-              chrome.tabs.update(tabId, { active: true });
-            });
-          });
-        } else {
-          chrome.tabs.move(tabId, { windowId: mainWin.id, index: -1 }, () => {
-            chrome.tabs.update(tabId, { active: true });
-          });
-        }
-      });
-    });
+    moveToMainWindow(tabId);
   });
 });
