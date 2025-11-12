@@ -10,4 +10,8 @@ Available soon on [Chrome Web Store](#).
 
 
 ## Screenshots
-![Screenshot](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/Screenshot.jpg)
+Text Formatting:
+![Text Formatting](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/Screenshot.jpg)
+
+Modal Pop-Up:
+![Modal Pop-Up](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/Screenshot2.jpg)
