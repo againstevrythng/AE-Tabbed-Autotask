@@ -6,7 +6,7 @@ Originally developed by https://github.com/Invertee/Tabbed-Autotask.
 
 Forces Chrome to open Autotask pop-ups as tabs in your main window with smarter tab placement and optional title cleanup. Now includes enhanced formatting for Autotask Alert elements, supporting line breaks, bullet points, bold text, and headings for better readability.
 
-Download now at [Chrome Web Store]([#](https://chromewebstore.google.com/detail/autotask-only-with-tabs/llnogglnaidbmdpmbhgbalcdcdgfmbho)).
+Download now at [Chrome Web Store](https://chromewebstore.google.com/detail/autotask-only-with-tabs/llnogglnaidbmdpmbhgbalcdcdgfmbho).
 
 
 ## Screenshots
