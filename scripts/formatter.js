@@ -11,6 +11,7 @@
     let text = el.innerHTML;
     text = text.replace(/&#xA;/g, '\n');
     text = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    console.log(text)
 
     // --- Parse and extract modal content ---
     const modalPattern = /##\s*(.*?)\s*##([\s\S]*?)(?=(##|$))/g;

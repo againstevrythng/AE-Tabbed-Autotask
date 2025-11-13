@@ -1,5 +1,6 @@
 (() => {
   console.log("Modal Handler Loaded");
+  console.log("Current URL:", window.location.pathname);
 
   function createModal({ title, body }) {
   const overlay = document.createElement("div");
@@ -78,7 +79,10 @@
     if (!window._modalQueue?.length) return;
     const queue = [...window._modalQueue];
     window._modalQueue = [];
-    queue.forEach(createModal);
+    
+    if(!window.location.pathname.includes("TicketEdit")) {
+      queue.forEach(createModal);
+    }
   }
 
   // Trigger after small delay to allow formatter to finish
