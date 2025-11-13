@@ -31,7 +31,7 @@
   "content_scripts": [
     {
       "matches": ["https://*.autotask.net/*"],
-      "js": ["title.js", "formatter.js", "modals.js"],
+      "js": ["title.js", "formatter.js", "modals.js", "inserttips.js"],
       "run_at": "document_idle"
     }
   ],
