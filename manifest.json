@@ -3,7 +3,7 @@
   "name": "Autotask - Only with Tabs",
   "short_name": "AE-Tabbed-Autotask",
   "version": "1.0.1",
-  "description": "Forces Autotask pop-ups to open as tabs in your main window with smarter tab placement, optional title renaming, and message formatting support.",
+  "description": "Forces Autotask pop-ups to open as tabs in your main window with smarter tab placement, and other options",
   "minimum_chrome_version": "114",
   "icons": {
     "48": "icon48.png",
