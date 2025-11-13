@@ -6,13 +6,13 @@
   "description": "Forces Autotask pop-ups to open as tabs in your main window with smarter tab placement, and other options",
   "minimum_chrome_version": "114",
   "icons": {
-    "48": "icon48.png",
-    "128": "icon128.png"
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
   },
   "action": {
     "default_icon": {
-      "48": "icon48.png",
-      "128": "icon128.png"
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
     },
     "default_popup": "popup.html",
     "default_title": "Autotask - Only with Tabs"
@@ -31,7 +31,7 @@
   "content_scripts": [
     {
       "matches": ["https://*.autotask.net/*"],
-      "js": ["title.js", "formatter.js", "modals.js", "inserttips.js"],
+      "js": ["title.js", "modules/formatter.js", "modules/modals.js", "modules/inserttips.js"],
       "run_at": "document_idle"
     }
   ],
