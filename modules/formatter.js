@@ -67,8 +67,10 @@
       modals.forEach(m => {
         const body = m.body.join("\n").trim();
         if (!body) return;
-        window._modalQueue.push({ title: m.title, body });
-        queued = true;
+        if (!window.location.pathname.includes("TicketEdit")) {
+          window._modalQueue.push({ title: m.title, body });
+          queued = true;
+        }
       });
     }
 
