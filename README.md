@@ -11,10 +11,10 @@ Download now at [Chrome Web Store](https://chromewebstore.google.com/detail/auto
 
 ## Screenshots
 Text Formatting:
-![Text Formatting](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/Screenshot.jpg)
+![Text Formatting](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/images/Screenshot.jpg)
 
 Modal Pop-Up:
-![Modal Pop-Up](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/Screenshot2.jpg)
+![Modal Pop-Up](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/images/Screenshot2.jpg)
 
 Formatting Instructions:
-![Formatting Instructions](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/Screenshot3.jpg)
+![Formatting Instructions](https://github.com/againstevrythng/AE-Tabbed-Autotask/blob/main/images/Screenshot3.jpg)
