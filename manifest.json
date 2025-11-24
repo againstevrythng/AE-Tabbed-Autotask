@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Autotask - Only with Tabs",
   "short_name": "AE-Tabbed-Autotask",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Forces Autotask pop-ups to open as tabs in your main window with smarter tab placement, and other options",
   "minimum_chrome_version": "114",
   "icons": {
@@ -31,9 +31,9 @@
   "content_scripts": [
     {
       "matches": ["https://*.autotask.net/*"],
-      "js": ["title.js", "modules/formatter.js", "modules/modals.js", "modules/inserttips.js"],
+      "js": ["title.js", "modules/formatter.js", "modules/modals.js", "modules/inserttips.js","modules/stickyAlerts.js"],
       "run_at": "document_idle"
     }
   ],
-  "homepage_url": "https://github.com/Invertee/Tabbed-Autotask"
+  "homepage_url": "https://github.com/againstevrythng/AE-Tabbed-Autotask"
 }
