@@ -1,5 +1,6 @@
-// stickyalerts.js v3
-// Sticky, collapsible, resizable Autotask alert panel with auto-height expansion and session state.
+// stickyalerts.js v4
+// Sticky, collapsible, resizable Autotask alert panel with auto-height expansion,
+// dynamic body padding, and session state persistence.
 
 (function () {
 
@@ -10,7 +11,7 @@
         const css = `
 #StickyMessageWrapper {
     position: sticky;
-    top: 42px; /* adjust if your UI shifts */
+    top: 42px; /* adjust if needed depending on your header */
     width: 100%;
     background: #fff;
     z-index: 999999;
@@ -39,10 +40,6 @@
     flex: 1;
     overflow-y: auto;
 }
-
-.MessageBarContainer.Active {
-    margin-bottom: 0px;
-}
 `;
         const style = document.createElement('style');
         style.textContent = css;
@@ -50,16 +47,17 @@
     })();
 
 
+
     /**************************
      *  State Handling
      **************************/
-    const SESSION_KEY = "StickyAlertState_v3";
+    const SESSION_KEY = "StickyAlertState_v4";
 
     function loadState() {
         try {
             return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || {
                 expanded: false,
-                height: 180 // default expanded height
+                height: 180
             };
         } catch {
             return { expanded: false, height: 180 };
@@ -74,14 +72,41 @@
     let updateTimeout = null;
 
 
+
     /**************************
-     *  Calculate Auto Height
+     *  Body Padding Logic
+     **************************/
+    function updateBodyPadding(wrapperHeight) {
+        const body = document.body;
+        if (!body) return;
+
+        // Read current padding-top
+        const current = parseInt(getComputedStyle(body).paddingTop, 10);
+        const previous = parseInt(body.dataset.stickyPad || "0", 10);
+
+        // Remove previous adjustments to avoid cumulative padding.
+        const base = (isNaN(current) ? 105 : current) - previous;
+
+        // Apply new padding
+        const newPad = base + wrapperHeight;
+
+        body.style.paddingTop = `${newPad}px`;
+        body.dataset.stickyPad = wrapperHeight;
+    }
+
+
+
+    /**************************
+     *  Content Height Logic
      **************************/
     function autoHeight() {
         const clone = document.querySelector('#StickyMessageBar');
         if (!clone) return state.height;
-        return clone.scrollHeight + 35; // include toggle bar
+
+        // Add toggle bar height (approx 32–35px)
+        return clone.scrollHeight + 35;
     }
+
 
 
     /**************************
@@ -92,16 +117,19 @@
 
         if (state.expanded) {
             const h = autoHeight();
-            wrapper.style.height = `${h}px`;
             state.height = h;
+            wrapper.style.height = `${h}px`;
             btn.innerHTML = "▲ Alerts";
+            updateBodyPadding(h);
         } else {
             wrapper.style.height = "32px";
             btn.innerHTML = "▼ Alerts";
+            updateBodyPadding(32);
         }
 
         saveState(state);
     }
+
 
 
     /**************************
@@ -130,6 +158,7 @@
         if (newHeight >= 60 && newHeight <= 600) {
             wrapper.style.height = `${newHeight}px`;
             state.height = newHeight;
+            updateBodyPadding(newHeight);
         }
     }
 
@@ -138,6 +167,7 @@
         document.removeEventListener('mousemove', doResize, false);
         document.removeEventListener('mouseup', stopResize, false);
     }
+
 
 
     /**************************
@@ -157,51 +187,58 @@
             wrapper.id = "StickyMessageWrapper";
             wrapper.classList.add("StickyMessageWrapper");
 
-            // Set height based on state
+            // Initialize height
             wrapper.style.height = state.expanded ? `${state.height}px` : "32px";
 
-            // UI: toggle bar
+            // Toggle bar
             const collapseBtn = document.createElement("div");
             collapseBtn.classList.add("StickyToggleBar");
             collapseBtn.innerHTML = state.expanded ? "▲ Alerts" : "▼ Alerts";
             collapseBtn.onclick = () => togglePanel(wrapper, collapseBtn);
 
-            // UI: resizer
+            // Resizer
             const resizer = document.createElement("div");
             resizer.classList.add("StickyResizer");
             resizer.onmousedown = initResize(wrapper);
 
-            // Create clone
+            // Clone original message bar
             clone = original.cloneNode(true);
             clone.id = "StickyMessageBar";
             clone.classList.add("StickyMessageBarFixed");
 
-            // Build UI structure
             header.appendChild(wrapper);
             wrapper.appendChild(collapseBtn);
             wrapper.appendChild(clone);
             wrapper.appendChild(resizer);
 
-            // Keep original for layout but invisible
+            // Hide original but keep layout
             original.style.opacity = "0";
             original.style.pointerEvents = "none";
             original.style.height = "0px";
         }
 
+        // Update clone with new content
         clone.innerHTML = original.innerHTML;
 
-        // If expanded, auto-adjust height to fit content
+        // Auto-adjust if currently expanded
         if (state.expanded) {
             const needed = autoHeight();
-            wrapper.style.height = `${Math.max(state.height, needed)}px`;
-            state.height = Math.max(state.height, needed);
+            const finalHeight = Math.max(state.height, needed);
+
+            wrapper.style.height = `${finalHeight}px`;
+            state.height = finalHeight;
+
+            updateBodyPadding(finalHeight);
             saveState(state);
+        } else {
+            updateBodyPadding(32);
         }
     }
 
 
+
     /**************************
-     *  Mutation Observer
+     *  Watch Autotask Alerts
      **************************/
     function observeOriginal() {
         const original = document.querySelector('.MessageBarContainer');
@@ -219,6 +256,7 @@
             attributes: true
         });
     }
+
 
 
     /**************************
