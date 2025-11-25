@@ -9,6 +9,10 @@
      **************************/
     (function injectStyles() {
         const css = `
+        .MessageBarContainer.Active {
+    margin-bottom: 1px !important;
+}
+
 #StickyMessageWrapper {
     position: sticky;
     top: 42px; /* adjust if needed depending on your header */
@@ -34,6 +38,7 @@
     height: 6px;
     cursor: ns-resize;
     background: #ddd;
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.25);
 }
 
 .StickyMessageBarFixed {
@@ -137,36 +142,48 @@
      **************************/
     let startY, startHeight;
 
-    function initResize(wrapper) {
-        return function (e) {
-            if (!state.expanded) return;
+function initResize(wrapper) {
+    return function (e) {
+        if (!state.expanded) return;
 
-            startY = e.clientY;
-            startHeight = parseInt(getComputedStyle(wrapper).height, 10);
+        startY = e.clientY;
+        startHeight = parseInt(getComputedStyle(wrapper).height, 10);
 
-            document.addEventListener('mousemove', doResize, false);
-            document.addEventListener('mouseup', stopResize, false);
-        };
+        // Disable text selection globally during drag
+        document.body.style.userSelect = "none";
+        document.body.style.webkitUserSelect = "none";
+        document.body.style.MozUserSelect = "none";
+
+        document.addEventListener('mousemove', doResize, false);
+        document.addEventListener('mouseup', stopResize, false);
+    };
+}
+
+function doResize(e) {
+    const wrapper = document.querySelector('#StickyMessageWrapper');
+    if (!wrapper) return;
+
+    const maxHeight = autoHeight(); // natural max height based on content
+    const newHeight = startHeight + (e.clientY - startY);
+
+    if (newHeight >= 60 && newHeight <= maxHeight) {
+        wrapper.style.height = `${newHeight}px`;
+        state.height = newHeight;
+        updateBodyPadding(newHeight);
     }
+}
 
-    function doResize(e) {
-        const wrapper = document.querySelector('#StickyMessageWrapper');
-        if (!wrapper) return;
+function stopResize() {
+    saveState(state);
 
-        const newHeight = startHeight + (e.clientY - startY);
+    // Re-enable text selection
+    document.body.style.userSelect = "";
+    document.body.style.webkitUserSelect = ""; //deprecated
+    document.body.style.MozUserSelect = "";
 
-        if (newHeight >= 60 && newHeight <= 600) {
-            wrapper.style.height = `${newHeight}px`;
-            state.height = newHeight;
-            updateBodyPadding(newHeight);
-        }
-    }
-
-    function stopResize() {
-        saveState(state);
-        document.removeEventListener('mousemove', doResize, false);
-        document.removeEventListener('mouseup', stopResize, false);
-    }
+    document.removeEventListener('mousemove', doResize, false);
+    document.removeEventListener('mouseup', stopResize, false);
+}
 
 
 
