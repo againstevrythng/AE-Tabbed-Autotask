@@ -1,6 +1,7 @@
-// stickyalerts.js v4
-// Sticky, collapsible, resizable Autotask alert panel with auto-height expansion,
-// dynamic body padding, and session state persistence.
+// stickyalerts.js v5
+// Sticky, collapsible, resizable Autotask alert panel with
+// auto-height expansion, dynamic body padding, click/drag logic,
+// minimized-by-default behaviour, and session state persistence.
 
 (function () {
 
@@ -9,16 +10,22 @@
      **************************/
     (function injectStyles() {
         const css = `
-        .MessageBarContainer.Active {
+/* Reduce default margin behind the original alert */
+.MessageBarContainer.Active {
     margin-bottom: 1px !important;
+}
+
+/*Fix drop-downs being hidden behind Alert bar*/
+.ToolBar>.ToolBarItem {
+    z-index: 30001 !important;
 }
 
 #StickyMessageWrapper {
     position: sticky;
-    top: 42px; /* adjust if needed depending on your header */
+    top: 42px; /* adjust to your header layout */
     width: 100%;
     background: #fff;
-    z-index: 999999;
+    z-index: 3000;
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: column;
@@ -26,7 +33,7 @@
 }
 
 .StickyToggleBar {
-    background: #eee;
+    background: #ebc785ff;
     padding: 4px 8px;
     font-size: 12px;
     cursor: pointer;
@@ -56,12 +63,12 @@
     /**************************
      *  State Handling
      **************************/
-    const SESSION_KEY = "StickyAlertState_v4";
+    const SESSION_KEY = "StickyAlertState_v5";
 
     function loadState() {
         try {
             return JSON.parse(sessionStorage.getItem(SESSION_KEY)) || {
-                expanded: false,
+                expanded: false,   // minimized by default
                 height: 180
             };
         } catch {
@@ -85,14 +92,10 @@
         const body = document.body;
         if (!body) return;
 
-        // Read current padding-top
         const current = parseInt(getComputedStyle(body).paddingTop, 10);
         const previous = parseInt(body.dataset.stickyPad || "0", 10);
 
-        // Remove previous adjustments to avoid cumulative padding.
         const base = (isNaN(current) ? 105 : current) - previous;
-
-        // Apply new padding
         const newPad = base + wrapperHeight;
 
         body.style.paddingTop = `${newPad}px`;
@@ -107,9 +110,7 @@
     function autoHeight() {
         const clone = document.querySelector('#StickyMessageBar');
         if (!clone) return state.height;
-
-        // Add toggle bar height (approx 32–35px)
-        return clone.scrollHeight + 35;
+        return clone.scrollHeight + 35; // include toggle bar height
     }
 
 
@@ -138,52 +139,73 @@
 
 
     /**************************
-     *  Resize Logic
+     *  Resize Logic (click + drag)
      **************************/
-    let startY, startHeight;
+    let startY, startHeight, isDragging = false;
+    const dragThreshold = 3;
 
-function initResize(wrapper) {
-    return function (e) {
-        if (!state.expanded) return;
+    function initResize(wrapper) {
+        return function (e) {
+            startY = e.clientY;
+            startHeight = parseInt(getComputedStyle(wrapper).height, 10);
+            isDragging = false;
 
-        startY = e.clientY;
-        startHeight = parseInt(getComputedStyle(wrapper).height, 10);
+            document.body.style.userSelect = "none";
 
-        // Disable text selection globally during drag
-        document.body.style.userSelect = "none";
-        document.body.style.webkitUserSelect = "none";
-        document.body.style.MozUserSelect = "none";
-
-        document.addEventListener('mousemove', doResize, false);
-        document.addEventListener('mouseup', stopResize, false);
-    };
-}
-
-function doResize(e) {
-    const wrapper = document.querySelector('#StickyMessageWrapper');
-    if (!wrapper) return;
-
-    const maxHeight = autoHeight(); // natural max height based on content
-    const newHeight = startHeight + (e.clientY - startY);
-
-    if (newHeight >= 60 && newHeight <= maxHeight) {
-        wrapper.style.height = `${newHeight}px`;
-        state.height = newHeight;
-        updateBodyPadding(newHeight);
+            document.addEventListener('mousemove', handleDragMove, false);
+            document.addEventListener('mouseup', handleDragEnd, false);
+        };
     }
-}
 
-function stopResize() {
-    saveState(state);
+    function handleDragMove(e) {
+        if (Math.abs(e.clientY - startY) > dragThreshold) {
+            isDragging = true;
+            doResize(e);
+        }
+    }
 
-    // Re-enable text selection
-    document.body.style.userSelect = "";
-    document.body.style.webkitUserSelect = ""; //deprecated
-    document.body.style.MozUserSelect = "";
+    function handleDragEnd(e) {
+        document.body.style.userSelect = "";
 
-    document.removeEventListener('mousemove', doResize, false);
-    document.removeEventListener('mouseup', stopResize, false);
-}
+        document.removeEventListener('mousemove', handleDragMove, false);
+        document.removeEventListener('mouseup', handleDragEnd, false);
+
+        // CLICK on resizer
+        if (!isDragging) {
+            const wrapper = document.querySelector('#StickyMessageWrapper');
+            const btn = document.querySelector('.StickyToggleBar');
+
+            if (!state.expanded) {
+                togglePanel(wrapper, btn); // expand on click
+            }
+        } else {
+            // Drag end
+            saveState(state);
+        }
+    }
+
+    function doResize(e) {
+        const wrapper = document.querySelector('#StickyMessageWrapper');
+        if (!wrapper) return;
+
+        // If minimized → auto-expand on drag
+        if (!state.expanded) {
+            state.expanded = true;
+            wrapper.style.height = `${startHeight}px`;
+
+            const btn = document.querySelector('.StickyToggleBar');
+            btn.innerHTML = "▲ Alerts";
+        }
+
+        const maxHeight = autoHeight();
+        const newHeight = startHeight + (e.clientY - startY);
+
+        if (newHeight >= 60 && newHeight <= maxHeight) {
+            wrapper.style.height = `${newHeight}px`;
+            state.height = newHeight;
+            updateBodyPadding(newHeight);
+        }
+    }
 
 
 
@@ -202,9 +224,7 @@ function stopResize() {
         if (!wrapper) {
             wrapper = document.createElement("div");
             wrapper.id = "StickyMessageWrapper";
-            wrapper.classList.add("StickyMessageWrapper");
 
-            // Initialize height
             wrapper.style.height = state.expanded ? `${state.height}px` : "32px";
 
             // Toggle bar
@@ -218,7 +238,6 @@ function stopResize() {
             resizer.classList.add("StickyResizer");
             resizer.onmousedown = initResize(wrapper);
 
-            // Clone original message bar
             clone = original.cloneNode(true);
             clone.id = "StickyMessageBar";
             clone.classList.add("StickyMessageBarFixed");
@@ -228,16 +247,13 @@ function stopResize() {
             wrapper.appendChild(clone);
             wrapper.appendChild(resizer);
 
-            // Hide original but keep layout
             original.style.opacity = "0";
             original.style.pointerEvents = "none";
             original.style.height = "0px";
         }
 
-        // Update clone with new content
         clone.innerHTML = original.innerHTML;
 
-        // Auto-adjust if currently expanded
         if (state.expanded) {
             const needed = autoHeight();
             const finalHeight = Math.max(state.height, needed);
