@@ -2,13 +2,15 @@
   "manifest_version": 3,
   "name": "Autotask - Only with Tabs",
   "short_name": "AE-Tabbed-Autotask",
-  "version": "1.0.4",
-  "description": "Forces Autotask pop-ups to open as tabs in your main window with smarter tab placement, and other options",
+  "version": "1.0.5",
+  "description": "Forces Autotask pop-ups to open as tabs with smarter tab placement and enhanced UI features.",
   "minimum_chrome_version": "114",
+
   "icons": {
     "48": "images/icon48.png",
     "128": "images/icon128.png"
   },
+
   "action": {
     "default_icon": {
       "48": "images/icon48.png",
@@ -17,23 +19,37 @@
     "default_popup": "popup.html",
     "default_title": "Autotask - Only with Tabs"
   },
+
   "background": {
     "service_worker": "background.js"
   },
+
   "permissions": [
     "tabs",
     "scripting",
     "storage"
   ],
+
   "host_permissions": [
     "https://*.autotask.net/*"
   ],
+
   "content_scripts": [
     {
       "matches": ["https://*.autotask.net/*"],
-      "js": ["title.js", "modules/formatter.js", "modules/modals.js", "modules/inserttips.js","modules/stickyAlerts.js"],
+      "js": [
+        "title.js",
+        "modules/formatter.js",
+        "modules/modals.js",
+        "modules/inserttips.js",
+        "modules/stickyAlerts.js"
+      ],
+      "css": [
+        "styles/ui.css"
+      ],
       "run_at": "document_idle"
     }
   ],
+
   "homepage_url": "https://github.com/againstevrythng/AE-Tabbed-Autotask"
 }
