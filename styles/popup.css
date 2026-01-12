@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* Use same font/colors as modal theme */
 .popup-container {
   width: 260px;
@@ -36,3 +37,43 @@
   transform: scale(1.1);
   cursor: pointer;
 }
+=======
+/* Use same font/colors as modal theme */
+.popup-container {
+  width: 260px;
+  padding: 14px;
+  background: #f8f9fb;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--ta-dark);
+}
+
+.popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: var(--ta-blue);
+}
+
+.popup-option {
+  background: #ffffff;
+  border: 1px solid var(--ta-border);
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.popup-label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.3;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.popup-label input[type="checkbox"] {
+  margin-top: 2px;
+  transform: scale(1.1);
+  cursor: pointer;
+}
+>>>>>>> 8ea2c6809f16bbbbb895339e843c933b6319e1b6
