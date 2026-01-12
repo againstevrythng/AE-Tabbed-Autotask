@@ -3,43 +3,47 @@
 <head>
   <meta charset="utf-8" />
   <title>Autotask - Only with Tabs</title>
-  <style>
-    body {
-      background: rgb(162, 170, 191);
-      color: white;
-      max-width: 250px;
-      min-width: 250px;
-      font-size: 12px;
-      margin: 12px;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    h3 { margin-top: 0; }
-    label { display: block; margin: 8px 0; line-height: 1.3; }
-  </style>
-  <script src="popup.js"></script>
+
+  <!-- Shared design system -->
+  <link rel="stylesheet" href="styles/ui.css">
+
+  <!-- Popup-specific minimal overrides -->
+  <link rel="stylesheet" href="styles/popup.css">
+
+  <script src="popup.js" defer></script>
 </head>
-<body>
-  <h3>Options</h3>
 
-  <label>
-    <input type="checkbox" id="opt_cur" checked>
-    Open Autotask tabs next to the current tab (instead of at the end)
-  </label>
+<body class="popup-container">
 
-  <label>
-    <input type="checkbox" id="opt_rename" checked>
-    Rename ticket/task tabs to the ticket title
-  </label>
+  <h2 class="popup-title">Extension Options</h2>
 
-  <label>
-    <input type="checkbox" id="opt_pop" checked>
-    Allow pop-ups on autotask.net (helps LiveLinks/external links)
-  </label>
-  
-  <label>
-  <input type="checkbox" id="opt_format" checked>
-  Format Autotask Alert text (line breaks, bullets, bold, etc.)
-</label>
-  
+  <div class="popup-option">
+    <label class="popup-label">
+      <input type="checkbox" id="opt_cur" checked>
+      Open new Autotask tabs next to the current tab
+    </label>
+  </div>
+
+  <div class="popup-option">
+    <label class="popup-label">
+      <input type="checkbox" id="opt_rename" checked>
+      Rename ticket/task tabs to match their titles
+    </label>
+  </div>
+
+  <div class="popup-option">
+    <label class="popup-label">
+      <input type="checkbox" id="opt_pop" checked>
+      Enable pop-ups (needed for LiveLinks / external links)
+    </label>
+  </div>
+
+  <div class="popup-option">
+    <label class="popup-label">
+      <input type="checkbox" id="opt_format" checked>
+      Format Autotask alert text (bullets, line breaks, bold)
+    </label>
+  </div>
+
 </body>
 </html>
