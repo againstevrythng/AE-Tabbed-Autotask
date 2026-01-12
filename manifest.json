@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Autotask - Only with Tabs",
   "short_name": "AE-Tabbed-Autotask",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Forces Autotask pop-ups to open as tabs with smarter tab placement and enhanced UI features.",
   "minimum_chrome_version": "114",
 

@@ -2,6 +2,37 @@
   console.log("MessageBar Formatter Loaded");
   window._modalQueue = window._modalQueue || [];
 
+  // Matches http(s)://... OR www....
+  // Tries to avoid grabbing trailing punctuation.
+  const URL_REGEX =
+    /\b((https?:\/\/|www\.)[^\s<>"'(){}\[\]]+[^\s<>"'.,;:!?(){}\[\]])/gi;
+
+  function escapeHtml(s) {
+    return (s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function linkifyHtml(html) {
+    // Don’t linkify inside existing <a ...>...</a>
+    // Split by anchor tags and only process non-anchor segments.
+    const parts = html.split(/(<a\b[^>]*>[\s\S]*?<\/a>)/gi);
+
+    return parts
+      .map(part => {
+        if (/^<a\b/i.test(part)) return part;
+
+        return part.replace(URL_REGEX, (full) => {
+          const href = full.startsWith("http") ? full : `https://${full}`;
+          return `<a class="ae-linkified-url" href="${href}" target="_blank" rel="noopener noreferrer">${full}</a>`;
+        });
+      })
+      .join("");
+  }
+
   function formatMessageContent(el) {
     if (!el || el.dataset.formatted === "true") return;
     el.dataset.formatted = "true";
@@ -20,6 +51,8 @@
     }
 
     // --- STEP 2: Normalize and decode ---
+    // Note: we decode a few common entities because you’re pulling from DOM text/spans;
+    // then we escape later before setting innerHTML to prevent injection.
     text = text
       .replace(/\r\n/g, "\n")
       .replace(/\r/g, "\n")
@@ -48,16 +81,11 @@
         if (!trimmed) continue;
 
         if (trimmed.startsWith(">>")) {
-          // continuation of current modal
-          if (currentModal) {
-            currentModal.body.push(trimmed.replace(/^>>+\s*/, ""));
-          }
+          if (currentModal) currentModal.body.push(trimmed.replace(/^>>+\s*/, ""));
         } else if (trimmed.startsWith(">")) {
-          // new modal
           if (currentModal) modals.push(currentModal);
           currentModal = { title, body: [trimmed.replace(/^>+\s*/, "")] };
         } else if (currentModal) {
-          // stop collecting modal content on non-">" line
           break;
         }
       }
@@ -79,8 +107,8 @@
       window.dispatchEvent(new CustomEvent("ae:modalQueued"));
     }
 
-    // --- STEP 4: Inline formatting ---
-    let html = text
+    // --- STEP 4: Build HTML safely (escape first), then apply formatting tokens, then linkify ---
+    let html = escapeHtml(text)
       .replace(/\*h\*(.*?)\*h\*/g, "<h4 style='margin:4px 0;'>$1</h4>")
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/##\s*(.*?)\s*##/g, "<strong>$1</strong>")
@@ -104,6 +132,9 @@
       })
       .replace(/\n{2,}/g, "<br><br>")
       .replace(/\n/g, "<br>");
+
+    // Linkify as the final step (so URLs inside list items etc become clickable)
+    html = linkifyHtml(html);
 
     el.innerHTML = html;
   }
